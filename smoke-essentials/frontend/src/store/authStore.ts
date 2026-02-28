@@ -66,16 +66,20 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           // Fetch Postgres profile using Firebase token
           const { data } = await api.get('/auth/profile');
           set({ user: data.data, isAuthenticated: true, isLoading: false });
-        } catch {
+        } catch (fetchError: any) {
+          console.error("Profile fetch failed:", fetchError?.response?.data || fetchError);
           // If profile fetch fails (e.g. they exist in Firebase but not Postgres yet from cross-environment migration),
           // attempt to seamlessly sync and create their profile.
           try {
+            console.log("Attempting to auto-sync user to Postgres...");
             const { data } = await api.post('/auth/sync', {
               name: firebaseUser.displayName || 'User',
               email: firebaseUser.email
             });
+            console.log("Auto-sync successful!");
             set({ user: data.data, isAuthenticated: true, isLoading: false });
-          } catch (syncError) {
+          } catch (syncError: any) {
+            console.error("Auto-sync failed:", syncError?.response?.data || syncError);
             set({ user: null, isAuthenticated: false, isLoading: false });
           }
         }
