@@ -63,12 +63,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       if (firebaseUser) {
         try {
-          // Fetch Postgres profile using Firebase token (automatically attached by Axios interceptor)
+          // Fetch Postgres profile using Firebase token
           const { data } = await api.get('/auth/profile');
           set({ user: data.data, isAuthenticated: true, isLoading: false });
         } catch {
-          // If profile fetch fails, they might be a new user who hasn't synced, or token expired
-          set({ user: null, isAuthenticated: false, isLoading: false });
+          // If profile fetch fails (e.g. they exist in Firebase but not Postgres yet from cross-environment migration),
+          // attempt to seamlessly sync and create their profile.
+          try {
+            const { data } = await api.post('/auth/sync', {
+              name: firebaseUser.displayName || 'User',
+              email: firebaseUser.email
+            });
+            set({ user: data.data, isAuthenticated: true, isLoading: false });
+          } catch (syncError) {
+            set({ user: null, isAuthenticated: false, isLoading: false });
+          }
         }
       } else {
         set({ user: null, isAuthenticated: false, isLoading: false });
