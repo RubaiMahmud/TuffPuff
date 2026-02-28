@@ -17,18 +17,34 @@ const PORT = process.env.PORT || 4000;
 
 // ---- Middleware ----
 app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+
+// CORS: Allow both local dev and production origins
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://tuffpuff-store.vercel.app',
+];
+if (process.env.CORS_ORIGIN) {
+  allowedOrigins.push(process.env.CORS_ORIGIN);
+}
+
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (mobile apps, curl, etc.)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
+  },
   credentials: true,
-}));
+};
+
+// Apply CORS to all routes including preflight OPTIONS
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
-
-// Handle preflight OPTIONS requests for all routes across the entire API
-app.options('*', cors({
-  origin: process.env.CORS_ORIGIN || 'https://tuffpuff-store.vercel.app',
-  credentials: true,
-}));
 
 app.use(apiLimiter);
 
