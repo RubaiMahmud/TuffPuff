@@ -1,0 +1,145 @@
+// ============================================
+// Prisma Schema — Smoke & Essentials
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---- Enums ----
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum ProductCategory {
+  CIGARETTES
+  LIGHTERS
+  ROLLING_PAPERS
+  BEVERAGES
+  SNACKS
+  ESSENTIALS
+  CONDOMS
+}
+
+// ---- User ----
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  phone         String    @unique
+  password      String?
+  firebaseUid   String?   @unique
+  role          Role      @default(USER)
+  ageVerified   Boolean   @default(false)
+  termsAccepted Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  addresses     Address[]
+  orders        Order[]
+
+  @@index([email])
+  @@index([phone])
+  @@map("users")
+}
+
+// ---- Address ----
+
+model Address {
+  id          String   @id @default(uuid())
+  userId      String
+  label       String   @default("Home")
+  fullAddress String
+  lat         Float
+  lng         Float
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders      Order[]
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// ---- Product ----
+
+model Product {
+  id          String          @id @default(uuid())
+  name        String
+  brand       String
+  category    ProductCategory
+  description String
+  price       Float
+  stock       Int             @default(0)
+  image       String          @default("")
+  packSize    String          @default("1 pack")
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  orderItems  OrderItem[]
+
+  @@index([category])
+  @@index([brand])
+  @@index([name])
+  @@map("products")
+}
+
+// ---- Order ----
+
+model Order {
+  id            String      @id @default(uuid())
+  userId        String
+  addressId     String
+  totalAmount   Float
+  deliveryFee   Float       @default(0)
+  discount      Float       @default(0)
+  finalAmount   Float
+  deliveryNotes String?
+  status        OrderStatus @default(PENDING)
+  estimatedDelivery String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  address       Address     @relation(fields: [addressId], references: [id])
+  items         OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+// ---- OrderItem ----
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
