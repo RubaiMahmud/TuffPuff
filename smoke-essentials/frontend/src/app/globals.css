@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-zinc-950 text-white;
+  }
+
+  ::selection {
+    @apply bg-lime-400/30 text-lime-400;
+  }
+
+  input,
+  textarea,
+  select {
+    @apply outline-none;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #09090b;
+    /* zinc-950 */
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #27272a;
+    /* zinc-800 */
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #3f3f46;
+    /* zinc-700 */
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-lime-400 to-lime-500 text-black font-black rounded-xl hover:from-lime-300 hover:to-lime-400 transition-all shadow-lg shadow-lime-500/20 hover:shadow-lime-500/40 border border-lime-400/50;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-zinc-900 border-2 border-zinc-800 text-white font-bold rounded-xl hover:border-lime-400 hover:text-lime-400 transition-all shadow-sm;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 bg-zinc-900 border-2 border-zinc-800 rounded-xl text-white placeholder:text-zinc-500 focus:ring-2 focus:ring-lime-400 focus:border-lime-400 transition-all shadow-sm;
+  }
+
+  .card {
+    @apply bg-zinc-900 border-2 border-zinc-800/50 rounded-2xl p-6 shadow-sm hover:border-lime-400/50 transition-colors;
+  }
+
+  .glass-card {
+    @apply bg-zinc-900/80 backdrop-blur-xl border-2 border-zinc-800/50 rounded-2xl p-6 shadow-sm hover:border-lime-400/50 transition-colors;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-lime-400 to-green-500 bg-clip-text text-transparent;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  .animate-glow {
+    animation: glow 2s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 20px rgba(163, 230, 53, 0.1);
+    }
+
+    to {
+      box-shadow: 0 0 30px rgba(163, 230, 53, 0.3);
+    }
+  }
+}
