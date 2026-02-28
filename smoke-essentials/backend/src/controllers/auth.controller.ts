@@ -48,6 +48,10 @@ export async function syncUser(req: Request, res: Response, next: NextFunction) 
       }
     }
 
+    // Check if this is the very first user being created
+    const userCount = await prisma.user.count();
+    const isFirstUser = userCount === 0;
+
     // Create new user
     const newUser = await prisma.user.create({
       data: {
@@ -56,7 +60,8 @@ export async function syncUser(req: Request, res: Response, next: NextFunction) 
         name: name || decodedToken.name || 'Firebase User',
         phone: phone || '',
         ageVerified: ageVerified || false,
-        termsAccepted: termsAccepted || false
+        termsAccepted: termsAccepted || false,
+        role: isFirstUser ? 'ADMIN' : 'USER',
       },
       select: { id: true, name: true, email: true, phone: true, role: true, ageVerified: true, termsAccepted: true, createdAt: true, updatedAt: true }
     });
