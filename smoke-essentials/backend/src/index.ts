@@ -23,6 +23,13 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
+
+// Handle preflight OPTIONS requests for all routes across the entire API
+app.options('*', cors({
+  origin: process.env.CORS_ORIGIN || 'https://tuffpuff-store.vercel.app',
+  credentials: true,
+}));
+
 app.use(apiLimiter);
 
 // ---- Health Check ----
